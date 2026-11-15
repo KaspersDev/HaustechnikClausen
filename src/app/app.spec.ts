@@ -1,16 +1,17 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { provideIonicAngular } from '@ionic/angular';
 import { App } from './app';
 import { routes } from './app.routes';
 import { NAVIGATION } from './navigation';
+import { testKontext } from './testing/test-datenbank';
+import { provideTestUmgebung } from './testing/test-providers';
 
 describe('App-Shell', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideIonicAngular({ mode: 'md' }), provideRouter(routes)],
+      providers: [provideTestUmgebung(await testKontext(), routes)],
     }).compileComponents();
   });
 

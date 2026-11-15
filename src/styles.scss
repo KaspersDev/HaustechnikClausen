@@ -37,3 +37,111 @@ ion-searchbar,
 ion-segment-button {
   min-height: var(--app-touch-min);
 }
+
+// Formulare ------------------------------------------------------------------
+.karten {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.karte {
+  background: var(--ion-item-background, #fff);
+  border: 1px solid var(--ion-color-light-shade, #d7d8da);
+  border-radius: 12px;
+  padding: 16px;
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+}
+
+.felder {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+
+  > * {
+    grid-column: span 6;
+  }
+  > .halb {
+    grid-column: span 3;
+  }
+  > .drittel {
+    grid-column: span 2;
+  }
+  > .zweidrittel {
+    grid-column: span 4;
+  }
+}
+
+.fehlerliste {
+  background: #fdecea;
+  border: 1px solid var(--ion-color-danger, #c5000f);
+  border-radius: 12px;
+  color: #7a0c14;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+
+  ul {
+    margin: 4px 0 0;
+    padding-left: 20px;
+  }
+}
+
+.hinweis {
+  color: var(--ion-color-medium-shade, #5f5f5f);
+  font-size: 0.9rem;
+}
+
+.leer {
+  color: var(--ion-color-medium-shade, #5f5f5f);
+  padding: 32px 16px;
+  text-align: center;
+}
+
+// Liste links, Detail rechts
+.split {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  height: 100%;
+
+  > .split-liste {
+    border-right: 1px solid var(--ion-color-light-shade, #d7d8da);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+
+    > .scroll {
+      flex: 1;
+      overflow-y: auto;
+    }
+  }
+
+  > .split-detail {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px;
+  }
+}
+
+ion-item.gewaehlt {
+  --background: rgba(var(--ion-color-primary-rgb), 0.12);
+}
+
+.betrag {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+ion-toolbar ion-buttons ion-button {
+  --padding-start: 20px;
+  --padding-end: 20px;
+  font-weight: 600;
+  margin-inline: 6px;
+}
