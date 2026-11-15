@@ -1,9 +1,11 @@
 import { InjectionToken, Provider, inject } from '@angular/core';
 import { DATENBANK } from '../db/datenbank';
+import { ARTIKEL_REPOSITORY } from './artikel.repository';
 import { EINSTELLUNGEN_REPOSITORY, FIRMENDATEN_REPOSITORY } from './firma.repository';
 import { KUNDE_REPOSITORY } from './kunde.repository';
 import { NUMMERNKREIS_REPOSITORY } from './nummernkreis.repository';
 import { RepoKontext, standardKontext } from './sqlite/kontext';
+import { SqliteArtikelRepository } from './sqlite/sqlite-artikel.repository';
 import {
   SqliteEinstellungenRepository,
   SqliteFirmendatenRepository,
@@ -35,6 +37,10 @@ export function provideRepositories(): Provider[] {
     {
       provide: KUNDE_REPOSITORY,
       useFactory: () => new SqliteKundeRepository(inject(REPO_KONTEXT)),
+    },
+    {
+      provide: ARTIKEL_REPOSITORY,
+      useFactory: () => new SqliteArtikelRepository(inject(REPO_KONTEXT)),
     },
   ];
 }
