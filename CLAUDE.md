@@ -21,7 +21,8 @@ Umsetzungsplan Version 1: `docs/UMSETZUNGSPLAN-V1.md`
 
 - Angular (Standalone Components, Signals), TypeScript `strict`
 - Ionic (UI-Komponenten), Capacitor (Android)
-- SQLite über `@capacitor-community/sqlite` (im Browser/Dev: `jeep-sqlite`)
+- SQLite über `@capacitor-community/sqlite`; im Browser (Entwicklung) und in Tests
+  dieselbe SQLite über `sql.js` (WebAssembly, im Browser in IndexedDB abgelegt)
 - Angular CDK Drag & Drop für das Kanban-Board
 - PDF-Erzeugung vollständig offline auf dem Gerät (pdfmake), Ablage/Teilen über
   Capacitor Filesystem + Share
