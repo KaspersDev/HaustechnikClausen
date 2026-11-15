@@ -11,11 +11,13 @@
     "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
     "test:watch": "ng test",
     "check": "npm run lint && npm run test && npm run build",
-    "android:sync": "ng build && cap sync android"
+    "android:sync": "ng build && cap sync android",
+    "e2e": "node e2e/run.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.9",
   "dependencies": {
+    "@angular/cdk": "^22.2.7",
     "@angular/common": "^22.2.0",
     "@angular/compiler": "^22.2.0",
     "@angular/core": "^22.2.0",
@@ -42,6 +44,7 @@
     "angular-eslint": "^22.6.0",
     "eslint": "^10.15.0",
     "jsdom": "^30.0.0",
+    "playwright": "1.63.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.72.2",

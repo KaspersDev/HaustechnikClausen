@@ -128,6 +128,8 @@ Mit ⊕ markierte Felder sind Ergänzungen gegenüber der ursprünglichen Vorgab
 - `npm run lint` – ESLint
 - `npm run build` – Produktions-Build nach `dist/haustechnik-clausen/browser`
 - `npm run check` – Lint + Tests + Build; muss vor jedem Commit grün sein
+- `npm run e2e` – Browser-Tests (Playwright, Touch-Eingabe) gegen die laufende App;
+  einmalig vorher `npx playwright install chromium`
 - `npm run android:sync` – Build und Übertragung in das Android-Projekt (`android/`);
   danach in Android Studio öffnen (`npx cap open android`) oder mit Gradle bauen
 
