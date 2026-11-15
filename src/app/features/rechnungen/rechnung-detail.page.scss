@@ -1,0 +1,101 @@
+.kopf {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1.4fr;
+  margin-bottom: 16px;
+}
+
+.empfaenger {
+  line-height: 1.5;
+}
+
+.daten,
+.summen {
+  display: grid;
+  gap: 6px 24px;
+  grid-template-columns: auto auto;
+  margin: 0;
+
+  dd {
+    margin: 0;
+  }
+}
+
+.daten {
+  justify-content: start;
+}
+
+.summen {
+  justify-content: end;
+  margin-top: 16px;
+
+  .linie {
+    border-top: 1px solid var(--ion-color-medium, #92949c);
+    padding-top: 6px;
+  }
+
+  .gesamt {
+    border-top: 2px solid #000;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding-top: 6px;
+  }
+}
+
+.position {
+  align-items: center;
+  border-bottom: 1px solid var(--ion-color-light-shade, #d7d8da);
+  display: grid;
+  gap: 8px;
+  // Zwei Zeilen je Position, damit es auch auf schmalen Tablets passt.
+  grid-template-columns: 140px repeat(4, minmax(70px, 1fr)) minmax(100px, 1fr) auto;
+  padding: 10px 0;
+
+  .typ {
+    grid-column: 1;
+  }
+
+  .beschreibung {
+    grid-column: 2 / -1;
+  }
+
+  .menge {
+    grid-column: 2;
+  }
+
+  .zeilenbetrag {
+    font-weight: 600;
+  }
+
+  .zeilenaktionen {
+    display: flex;
+
+    ion-button {
+      --padding-start: 12px;
+      --padding-end: 12px;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+  }
+}
+
+.position-neu {
+  margin-top: 12px;
+}
+
+.positionstabelle {
+  border-collapse: collapse;
+  width: 100%;
+
+  th,
+  td {
+    border-bottom: 1px solid var(--ion-color-light-shade, #d7d8da);
+    padding: 10px 8px;
+    text-align: left;
+  }
+
+  th.betrag,
+  td.betrag {
+    text-align: right;
+  }
+}

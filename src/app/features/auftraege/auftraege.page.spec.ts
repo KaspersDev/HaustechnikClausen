@@ -4,6 +4,7 @@ import { AuftragMitKunde, AuftragStatus } from '../../core/domain/auftrag';
 import { LEERER_KUNDE } from '../../core/domain/kunde';
 import { AUFTRAG_REPOSITORY, AuftragRepository } from '../../core/repositories/auftrag.repository';
 import { KUNDE_REPOSITORY } from '../../core/repositories/kunde.repository';
+import { RECHNUNG_REPOSITORY } from '../../core/repositories/rechnung.repository';
 import { testKontext } from '../../testing/test-datenbank';
 import { TestDialoge, provideTestUmgebung } from '../../testing/test-providers';
 import { AuftraegePage } from './auftraege.page';
@@ -126,15 +127,26 @@ describe('AuftraegePage (Kanban-Board)', () => {
   });
 
   it('weist das Ablegen in „Abgerechnet" ab und lässt die Karte, wo sie war', async () => {
+    dialoge.antwort = false;
     await ziehe('Dachrinne', 'Abgerechnet', 0);
     expect(spalte('Erledigt')).toEqual(['Dachrinne']);
     expect(spalte('Abgerechnet')).toEqual(['Gartentor']);
     expect((await repo.finde(ids['Dachrinne']))?.status).toBe('Erledigt');
-    expect(dialoge.fehler[0]).toContain('Rechnung erzeugen');
+    expect(dialoge.fragen).toEqual(['Rechnung erzeugen?']);
 
     await ziehe('Zaun', 'Abgerechnet', 0);
     expect((await repo.finde(ids['Zaun']))?.status).toBe('Offen');
-    expect(dialoge.fehler[1]).toContain('Nur erledigte Aufträge');
+    expect(dialoge.fehler[0]).toContain('Nur erledigte Aufträge');
+  });
+
+  it('bietet beim Ziehen eines erledigten Auftrags nach „Abgerechnet" die Rechnung an', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    await ziehe('Dachrinne', 'Abgerechnet', 0);
+    const [entwurf] = await TestBed.inject(RECHNUNG_REPOSITORY).alle();
+    expect(entwurf.status).toBe('Entwurf');
+    expect(entwurf.auftragId).toBe(ids['Dachrinne']);
+    expect(navigate).toHaveBeenCalledWith(['/rechnungen', entwurf.id]);
+    expect((await repo.finde(ids['Dachrinne']))?.status).toBe('Erledigt');
   });
 
   it('lässt abgerechnete Karten nicht ziehen und nicht verschieben', async () => {

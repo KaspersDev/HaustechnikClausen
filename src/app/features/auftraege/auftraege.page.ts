@@ -20,6 +20,8 @@ import {
 import { formatiereDatum } from '../../core/domain/datum';
 import { adresszeile } from '../../core/domain/kunde';
 import { AUFTRAG_REPOSITORY } from '../../core/repositories/auftrag.repository';
+import { RechnungAusAuftragService } from '../../core/services/rechnung-aus-auftrag.service';
+import { Bestaetigung } from '../../shared/bestaetigung';
 import { Meldung, fehlerText } from '../../shared/meldung';
 
 /** Der für das Board nötige Ausschnitt eines CDK-Drop-Ereignisses. */
@@ -130,6 +132,8 @@ export class AuftraegePage {
   private readonly repo = inject(AUFTRAG_REPOSITORY);
   private readonly router = inject(Router);
   private readonly meldung = inject(Meldung);
+  private readonly bestaetigung = inject(Bestaetigung);
+  private readonly rechnungAusAuftrag = inject(RechnungAusAuftragService);
 
   protected readonly statusListe = AUFTRAG_STATUS;
   protected readonly titel = STATUS_TITEL;
@@ -177,11 +181,11 @@ export class AuftraegePage {
     const ziel = ereignis.container.data;
 
     if (ziel === 'Abgerechnet' || !istStatuswechselErlaubt(auftrag.status, ziel)) {
-      if (auftrag.status !== 'Abgerechnet') {
+      if (auftrag.status === 'Erledigt') {
+        await this.rechnungAnbieten(auftrag);
+      } else if (auftrag.status !== 'Abgerechnet') {
         await this.meldung.fehler(
-          auftrag.status === 'Erledigt'
-            ? 'Abgerechnet wird ein Auftrag durch seine Rechnung: Auftrag öffnen und „Rechnung erzeugen" wählen.'
-            : 'Nur erledigte Aufträge können abgerechnet werden – über „Rechnung erzeugen" im Auftrag.',
+          'Nur erledigte Aufträge können abgerechnet werden. Den Auftrag zuerst nach „Erledigt" ziehen.',
         );
       }
       return;
@@ -195,6 +199,24 @@ export class AuftraegePage {
       await this.meldung.fehler(fehlerText(fehler));
     }
     await this.laden();
+  }
+
+  /** „Abgerechnet" entsteht nur durch eine Rechnung – deshalb wird sie hier angeboten. */
+  private async rechnungAnbieten(auftrag: AuftragMitKunde): Promise<void> {
+    const bestaetigt = await this.bestaetigung.frage(
+      'Rechnung erzeugen?',
+      `Abgerechnet wird ${auftrag.nummer} durch seine Rechnung. Jetzt einen Rechnungsentwurf mit Zeiten und Material anlegen?`,
+      'Rechnung erzeugen',
+    );
+    if (!bestaetigt) {
+      return;
+    }
+    try {
+      const rechnung = await this.rechnungAusAuftrag.erzeuge(auftrag.id);
+      await this.router.navigate(['/rechnungen', rechnung.id]);
+    } catch (fehler) {
+      await this.meldung.fehler(fehlerText(fehler));
+    }
   }
 }
 

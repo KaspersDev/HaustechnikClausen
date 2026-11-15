@@ -30,6 +30,11 @@ export const routes: Routes = [
       import('./features/rechnungen/rechnungen.page').then((m) => m.RechnungenPage),
   },
   {
+    path: 'rechnungen/:id',
+    loadComponent: () =>
+      import('./features/rechnungen/rechnung-detail.page').then((m) => m.RechnungDetailPage),
+  },
+  {
     path: 'einstellungen',
     loadComponent: () =>
       import('./features/einstellungen/einstellungen.page').then((m) => m.EinstellungenPage),

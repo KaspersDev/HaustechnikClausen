@@ -54,11 +54,16 @@ test('nach „Erledigt" gezogen zeigt die Karte das Erledigt-Datum', async () =>
   assert.match(await karte('Zaun reparieren').locator('.termin').textContent(), /Erledigt \d\d\.\d\d\.\d{4}/);
 });
 
-test('das Ziehen nach „Abgerechnet" wird abgewiesen', async () => {
+test('das Ziehen nach „Abgerechnet" bietet stattdessen die Rechnung an', async () => {
   await zieheMitFinger(app.page, karte('Zaun reparieren'), spalte('Abgerechnet').locator('.karten-liste'));
   assert.deepEqual(await titel('Abgerechnet'), []);
   assert.deepEqual(await titel('Erledigt'), ['Zaun reparieren']);
-  await app.page.locator('ion-toast').waitFor({ state: 'attached' });
+  const frage = app.page.locator('ion-alert');
+  await frage.waitFor();
+  assert.match(await frage.textContent(), /Rechnung erzeugen\?/);
+  await frage.locator('button', { hasText: 'Abbrechen' }).click();
+  await frage.waitFor({ state: 'detached' });
+  assert.deepEqual(await titel('Erledigt'), ['Zaun reparieren']);
 });
 
 test('Antippen öffnet den Auftrag', async () => {

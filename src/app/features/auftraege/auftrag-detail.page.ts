@@ -32,6 +32,7 @@ import { formatiereDatum } from '../../core/domain/datum';
 import { Adresse, Kunde, adresszeile, kundenname } from '../../core/domain/kunde';
 import { AUFTRAG_REPOSITORY } from '../../core/repositories/auftrag.repository';
 import { KUNDE_REPOSITORY } from '../../core/repositories/kunde.repository';
+import { RechnungAusAuftragService } from '../../core/services/rechnung-aus-auftrag.service';
 import { Fehlerliste } from '../../shared/fehlerliste';
 import { Meldung, fehlerText } from '../../shared/meldung';
 import { formularFehler, pflicht, plz } from '../../shared/validatoren';
@@ -121,6 +122,15 @@ const MAX_KUNDENTREFFER = 8;
           }
           @if (a.erledigtAm) {
             <p class="hinweis">Erledigt am {{ datum(a.erledigtAm) }}</p>
+          }
+          @if (a.status === 'Erledigt') {
+            <ion-button class="rechnung-erzeugen" size="large" (click)="rechnungErzeugen()">
+              Rechnung erzeugen
+            </ion-button>
+          } @else if (a.rechnungId) {
+            <ion-button class="rechnung-anzeigen" fill="outline" (click)="rechnungAnzeigen()">
+              Rechnung anzeigen
+            </ion-button>
           }
         </div>
       }
@@ -252,6 +262,7 @@ export class AuftragDetailPage {
   private readonly repo = inject(AUFTRAG_REPOSITORY);
   private readonly kundenRepo = inject(KUNDE_REPOSITORY);
   private readonly router = inject(Router);
+  private readonly rechnungAusAuftrag = inject(RechnungAusAuftragService);
   private readonly meldung = inject(Meldung);
   private readonly id = inject(ActivatedRoute).snapshot.paramMap.get('id');
 
@@ -376,6 +387,34 @@ export class AuftragDetailPage {
       this.auftrag.set(neu);
     } catch (fehler) {
       this.fehler.set([fehlerText(fehler)]);
+    }
+  }
+
+  /** Übernimmt Kunde, Zeiten und Material in einen Rechnungsentwurf und öffnet ihn. */
+  async rechnungErzeugen(): Promise<void> {
+    const auftrag = this.auftrag();
+    if (!auftrag) {
+      return;
+    }
+    try {
+      const rechnung = await this.rechnungAusAuftrag.erzeuge(auftrag.id);
+      await this.router.navigate(['/rechnungen', rechnung.id]);
+    } catch (fehler) {
+      this.fehler.set([fehlerText(fehler)]);
+    }
+  }
+
+  async rechnungAnzeigen(): Promise<void> {
+    const rechnungId = this.auftrag()?.rechnungId;
+    if (rechnungId) {
+      await this.router.navigate(['/rechnungen', rechnungId]);
+    }
+  }
+
+  /** Ionic ruft dies bei jeder Rückkehr auf die Seite auf (z. B. nach dem Festschreiben). */
+  ionViewWillEnter(): void {
+    if (this.auftrag()) {
+      void this.laden();
     }
   }
 }
