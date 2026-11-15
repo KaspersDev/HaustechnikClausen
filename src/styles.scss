@@ -145,3 +145,15 @@ ion-toolbar ion-buttons ion-button {
   font-weight: 600;
   margin-inline: 6px;
 }
+
+.aktionen {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+
+  .abstand {
+    flex: 1;
+  }
+}
