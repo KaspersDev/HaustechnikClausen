@@ -6,6 +6,7 @@ import { MATERIALEINTRAG_REPOSITORY, ZEITEINTRAG_REPOSITORY } from './erfassung.
 import { EINSTELLUNGEN_REPOSITORY, FIRMENDATEN_REPOSITORY } from './firma.repository';
 import { KUNDE_REPOSITORY } from './kunde.repository';
 import { NUMMERNKREIS_REPOSITORY } from './nummernkreis.repository';
+import { RECHNUNG_REPOSITORY } from './rechnung.repository';
 import { RepoKontext, standardKontext } from './sqlite/kontext';
 import { SqliteArtikelRepository } from './sqlite/sqlite-artikel.repository';
 import { SqliteAuftragRepository } from './sqlite/sqlite-auftrag.repository';
@@ -18,6 +19,7 @@ import {
   SqliteFirmendatenRepository,
 } from './sqlite/sqlite-firma.repository';
 import { SqliteKundeRepository } from './sqlite/sqlite-kunde.repository';
+import { SqliteRechnungRepository } from './sqlite/sqlite-rechnung.repository';
 import { SqliteNummernkreisRepository } from './sqlite/sqlite-nummernkreis.repository';
 
 export const REPO_KONTEXT = new InjectionToken<RepoKontext>('REPO_KONTEXT');
@@ -60,6 +62,10 @@ export function provideRepositories(): Provider[] {
     {
       provide: MATERIALEINTRAG_REPOSITORY,
       useFactory: () => new SqliteMaterialeintragRepository(inject(REPO_KONTEXT)),
+    },
+    {
+      provide: RECHNUNG_REPOSITORY,
+      useFactory: () => new SqliteRechnungRepository(inject(REPO_KONTEXT)),
     },
   ];
 }
