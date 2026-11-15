@@ -41,7 +41,9 @@
               "src/styles.scss"
             ],
             "allowedCommonJsDependencies": [
-              "sql.js"
+              "sql.js",
+              "pdfmake/build/pdfmake",
+              "pdfmake/build/vfs_fonts"
             ]
           },
           "configurations": {

@@ -33,6 +33,7 @@ import {
 } from '../../core/domain/rechnung';
 import { POSITIONSTYPEN, PositionsTyp } from '../../core/domain/typen';
 import { RECHNUNG_REPOSITORY } from '../../core/repositories/rechnung.repository';
+import { PdfService } from '../../core/services/pdf.service';
 import { Bestaetigung } from '../../shared/bestaetigung';
 import { Fehlerliste } from '../../shared/fehlerliste';
 import { Meldung, fehlerText } from '../../shared/meldung';
@@ -93,7 +94,9 @@ function positionForm(p: RechnungspositionDaten | null): PositionForm {
         </ion-title>
         <ion-buttons slot="end">
           @if (rechnung(); as r) {
-            <ion-button class="pdf" fill="outline" (click)="pdf()">PDF</ion-button>
+            <ion-button class="pdf" fill="outline" [disabled]="erzeugtPdf()" (click)="pdf()">
+              {{ erzeugtPdf() ? 'PDF wird erzeugt …' : 'PDF' }}
+            </ion-button>
             @if (r.status === 'Entwurf') {
               <ion-button class="speichern" fill="outline" (click)="speichern()"
                 >Speichern</ion-button
@@ -340,6 +343,7 @@ function positionForm(p: RechnungspositionDaten | null): PositionForm {
 export class RechnungDetailPage {
   private readonly repo = inject(RECHNUNG_REPOSITORY);
   private readonly router = inject(Router);
+  private readonly pdfService = inject(PdfService);
   private readonly meldung = inject(Meldung);
   private readonly bestaetigung = inject(Bestaetigung);
   private readonly id = inject(ActivatedRoute).snapshot.paramMap.get('id') ?? '';
@@ -357,6 +361,7 @@ export class RechnungDetailPage {
 
   readonly rechnung = signal<Rechnung | null>(null);
   readonly fehler = signal<readonly string[]>([]);
+  protected readonly erzeugtPdf = signal(false);
   readonly istEntwurf = computed(() => this.rechnung()?.status === 'Entwurf');
   readonly istStorno = computed(() => {
     const r = this.rechnung();
@@ -530,9 +535,20 @@ export class RechnungDetailPage {
     }
   }
 
-  /** Wird in Schritt 13 durch den PDF-Export ersetzt. */
+  /** Erzeugt das PDF; ungespeicherte Änderungen am Entwurf werden vorher gespeichert. */
   async pdf(): Promise<void> {
-    await this.meldung.fehler('Der PDF-Export folgt im nächsten Schritt.');
+    const rechnung = this.rechnung();
+    if (!rechnung || (rechnung.status === 'Entwurf' && !(await this.speichern()))) {
+      return;
+    }
+    this.erzeugtPdf.set(true);
+    try {
+      await this.pdfService.oeffne(rechnung.id);
+    } catch (fehler) {
+      this.fehler.set([`Das PDF konnte nicht erzeugt werden: ${fehlerText(fehler)}`]);
+    } finally {
+      this.erzeugtPdf.set(false);
+    }
   }
 
   private async ausfuehren(aktion: () => Promise<Rechnung>, erfolg: string): Promise<void> {

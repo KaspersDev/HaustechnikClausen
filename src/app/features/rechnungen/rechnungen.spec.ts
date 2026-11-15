@@ -5,6 +5,7 @@ import {
   RECHNUNG_REPOSITORY,
   RechnungRepository,
 } from '../../core/repositories/rechnung.repository';
+import { PdfService } from '../../core/services/pdf.service';
 import { Grunddaten, entwurfsdaten, legeAuftragAn, legeGrunddatenAn } from '../../testing/fixtures';
 import { testKontext } from '../../testing/test-datenbank';
 import { TestDialoge, provideTestUmgebung } from '../../testing/test-providers';
@@ -211,6 +212,27 @@ describe('Rechnungen', () => {
       expect(texte(el, '.summen .brutto')).toEqual(['-374,14 €']);
       expect(el.querySelector('.bezahlt')).toBeNull();
       expect(el.querySelector('.stornieren')).toBeNull();
+    });
+
+    it('speichert Änderungen am Entwurf und erzeugt dann das PDF', async () => {
+      const oeffne = vi.spyOn(TestBed.inject(PdfService), 'oeffne').mockResolvedValue();
+      seite.positionen.at(0).patchValue({ menge: '4' });
+      await seite.pdf();
+      expect((await repo.finde(id))?.positionen[0].menge).toBe(4);
+      expect(oeffne).toHaveBeenCalledWith(id);
+    });
+
+    it('erzeugt kein PDF aus einem ungültigen Entwurf und meldet PDF-Fehler', async () => {
+      const oeffne = vi
+        .spyOn(TestBed.inject(PdfService), 'oeffne')
+        .mockRejectedValue(new Error('kaputt'));
+      seite.positionen.at(0).patchValue({ menge: 'x' });
+      await seite.pdf();
+      expect(oeffne).not.toHaveBeenCalled();
+
+      seite.positionen.at(0).patchValue({ menge: '1' });
+      await seite.pdf();
+      expect(seite.fehler()).toEqual(['Das PDF konnte nicht erzeugt werden: kaputt']);
     });
 
     it('löscht den Entwurf nach Bestätigung und kehrt zur Liste zurück', async () => {
