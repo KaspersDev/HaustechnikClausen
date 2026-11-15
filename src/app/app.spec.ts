@@ -41,7 +41,7 @@ describe('App-Shell', () => {
   });
 
   it('hat für jeden Navigationseintrag eine Route', () => {
-    const pfade = routes.map((r) => `/${r.path}`);
+    const pfade = routes.map((r) => `/${r.path ?? ''}`);
     for (const eintrag of NAVIGATION) {
       expect(pfade).toContain(eintrag.pfad);
     }

@@ -7,6 +7,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auftraege/auftraege.page').then((m) => m.AuftraegePage),
   },
   {
+    path: 'auftraege/neu',
+    loadComponent: () =>
+      import('./features/auftraege/auftrag-detail.page').then((m) => m.AuftragDetailPage),
+  },
+  {
+    path: 'auftraege/:id',
+    loadComponent: () =>
+      import('./features/auftraege/auftrag-detail.page').then((m) => m.AuftragDetailPage),
+  },
+  {
     path: 'kunden',
     loadComponent: () => import('./features/kunden/kunden.page').then((m) => m.KundenPage),
   },
