@@ -25,7 +25,7 @@ Umsetzungsplan Version 1: `docs/UMSETZUNGSPLAN-V1.md`
 - Angular CDK Drag & Drop für das Kanban-Board
 - PDF-Erzeugung vollständig offline auf dem Gerät (pdfmake), Ablage/Teilen über
   Capacitor Filesystem + Share
-- Tests: Unit-/Integrationstests mit dem Test-Runner der Angular CLI;
+- Tests: Unit-/Integrationstests mit Vitest über die Angular CLI;
   Repository-Tests laufen gegen eine echte In-Memory-SQLite
 
 Konkrete Versionen werden beim Scaffolding festgelegt (jeweils aktuelle stabile Version).
@@ -122,5 +122,14 @@ Mit ⊕ markierte Felder sind Ergänzungen gegenüber der ursprünglichen Vorgab
 
 ## Befehle
 
-Werden mit dem Scaffolding (Plan Schritt 1) hier eingetragen
-(`npm start`, `npm test`, `npm run lint`, `npm run build`, Android-Build).
+- `npm start` – Dev-Server im Browser (http://localhost:4200)
+- `npm test` – alle Tests einmal ausführen (`npm run test:watch` für Watch-Modus)
+- `npm run lint` – ESLint
+- `npm run build` – Produktions-Build nach `dist/haustechnik-clausen/browser`
+- `npm run check` – Lint + Tests + Build; muss vor jedem Commit grün sein
+- `npm run android:sync` – Build und Übertragung in das Android-Projekt (`android/`);
+  danach in Android Studio öffnen (`npx cap open android`) oder mit Gradle bauen
+
+Hinweise zum Stack: Ionic 9 exportiert die Standalone-Komponenten direkt aus
+`@ionic/angular`. Die App läuft zoneless; Zustand in Komponenten über Signals.
+Tests laufen mit Vitest in jsdom (`src/test-setup.ts` stellt fehlende Browser-APIs bereit).
