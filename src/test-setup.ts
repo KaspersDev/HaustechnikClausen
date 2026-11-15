@@ -12,3 +12,9 @@ if (typeof window.matchMedia !== 'function') {
       dispatchEvent: () => false,
     }) as MediaQueryList;
 }
+
+// Feste Zeitzone, damit Datums- und Uhrzeittests überall gleich laufen.
+const prozess = (globalThis as { process?: { env: Record<string, string | undefined> } }).process;
+if (prozess) {
+  prozess.env['TZ'] = 'Europe/Berlin';
+}

@@ -35,6 +35,8 @@ import { KUNDE_REPOSITORY } from '../../core/repositories/kunde.repository';
 import { Fehlerliste } from '../../shared/fehlerliste';
 import { Meldung, fehlerText } from '../../shared/meldung';
 import { formularFehler, pflicht, plz } from '../../shared/validatoren';
+import { MaterialKarte } from './material-karte';
+import { ZeitenKarte } from './zeiten-karte';
 
 const text = (): FormControl<string> => new FormControl('', { nonNullable: true });
 const MAX_KUNDENTREFFER = 8;
@@ -44,6 +46,8 @@ const MAX_KUNDENTREFFER = 8;
   imports: [
     ReactiveFormsModule,
     Fehlerliste,
+    MaterialKarte,
+    ZeitenKarte,
     IonBackButton,
     IonButton,
     IonButtons,
@@ -235,6 +239,11 @@ const MAX_KUNDENTREFFER = 8;
             }
           </div>
         </form>
+
+        @if (auftrag(); as a) {
+          <app-zeiten-karte [auftragId]="a.id" [gesperrt]="gesperrt()" />
+          <app-material-karte [auftragId]="a.id" [gesperrt]="gesperrt()" />
+        }
       </div>
     </ion-content>
   `,

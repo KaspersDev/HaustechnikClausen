@@ -2,12 +2,17 @@ import { InjectionToken, Provider, inject } from '@angular/core';
 import { DATENBANK } from '../db/datenbank';
 import { ARTIKEL_REPOSITORY } from './artikel.repository';
 import { AUFTRAG_REPOSITORY } from './auftrag.repository';
+import { MATERIALEINTRAG_REPOSITORY, ZEITEINTRAG_REPOSITORY } from './erfassung.repository';
 import { EINSTELLUNGEN_REPOSITORY, FIRMENDATEN_REPOSITORY } from './firma.repository';
 import { KUNDE_REPOSITORY } from './kunde.repository';
 import { NUMMERNKREIS_REPOSITORY } from './nummernkreis.repository';
 import { RepoKontext, standardKontext } from './sqlite/kontext';
 import { SqliteArtikelRepository } from './sqlite/sqlite-artikel.repository';
 import { SqliteAuftragRepository } from './sqlite/sqlite-auftrag.repository';
+import {
+  SqliteMaterialeintragRepository,
+  SqliteZeiteintragRepository,
+} from './sqlite/sqlite-erfassung.repository';
 import {
   SqliteEinstellungenRepository,
   SqliteFirmendatenRepository,
@@ -47,6 +52,14 @@ export function provideRepositories(): Provider[] {
     {
       provide: AUFTRAG_REPOSITORY,
       useFactory: () => new SqliteAuftragRepository(inject(REPO_KONTEXT)),
+    },
+    {
+      provide: ZEITEINTRAG_REPOSITORY,
+      useFactory: () => new SqliteZeiteintragRepository(inject(REPO_KONTEXT)),
+    },
+    {
+      provide: MATERIALEINTRAG_REPOSITORY,
+      useFactory: () => new SqliteMaterialeintragRepository(inject(REPO_KONTEXT)),
     },
   ];
 }

@@ -241,6 +241,11 @@ export class ArtikelPage {
 
   readonly geladen: Promise<void> = this.laden();
 
+  /** Ionic ruft dies bei jeder Rückkehr auf die Seite auf. */
+  ionViewWillEnter(): void {
+    void this.laden();
+  }
+
   constructor() {
     // Beim Anlegen die übliche Einheit des Typs vorschlagen.
     this.form.controls.typ.valueChanges.subscribe((typ) => {

@@ -231,6 +231,11 @@ export class KundenPage {
 
   readonly geladen: Promise<void> = this.laden();
 
+  /** Ionic ruft dies bei jeder Rückkehr auf die Seite auf. */
+  ionViewWillEnter(): void {
+    void this.laden();
+  }
+
   async laden(): Promise<void> {
     this.kunden.set(await this.repo.alle(this.suche()));
   }
