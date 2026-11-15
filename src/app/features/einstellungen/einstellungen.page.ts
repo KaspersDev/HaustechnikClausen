@@ -16,7 +16,9 @@ import {
   FIRMENDATEN_REPOSITORY,
 } from '../../core/repositories/firma.repository';
 import { NUMMERNKREIS_REPOSITORY } from '../../core/repositories/nummernkreis.repository';
+import { DatensicherungService } from '../../core/services/datensicherung.service';
 import { UHR } from '../../core/services/uhr';
+import { Bestaetigung } from '../../shared/bestaetigung';
 import { Fehlerliste } from '../../shared/fehlerliste';
 import { Meldung, fehlerText } from '../../shared/meldung';
 import {
@@ -318,6 +320,35 @@ const text = (validatoren: ValidatorFn[] = []): FormControl<string> =>
             Den Wortlaut bitte einmal vom Steuerberater bestätigen lassen.
           </p>
         </section>
+
+        <section class="karte">
+          <h2>Datensicherung</h2>
+          <p class="hinweis">
+            Alle Daten liegen nur auf diesem Gerät. Bitte regelmäßig exportieren und die Datei
+            außerhalb des Tablets aufbewahren (z. B. per E-Mail oder in einer Cloud-Ablage).
+          </p>
+          <div class="logo-zeile">
+            <ion-button class="exportieren" [disabled]="sichert()" (click)="exportieren()">
+              Daten exportieren
+            </ion-button>
+            <ion-button
+              class="wiederherstellen"
+              fill="outline"
+              color="danger"
+              [disabled]="sichert()"
+              (click)="sicherung.click()"
+            >
+              Daten wiederherstellen
+            </ion-button>
+            <input
+              #sicherung
+              type="file"
+              accept=".sqlite,application/vnd.sqlite3,application/octet-stream"
+              hidden
+              (change)="sicherungGewaehlt($event)"
+            />
+          </div>
+        </section>
       </form>
     </ion-content>
   `,
@@ -327,9 +358,12 @@ export class EinstellungenPage {
   private readonly einstellungenRepo = inject(EINSTELLUNGEN_REPOSITORY);
   private readonly nummernRepo = inject(NUMMERNKREIS_REPOSITORY);
   private readonly meldung = inject(Meldung);
+  private readonly bestaetigung = inject(Bestaetigung);
+  private readonly datensicherung = inject(DatensicherungService);
 
   protected readonly jahr = inject(UHR).jetzt().getFullYear();
   protected readonly speichert = signal(false);
+  protected readonly sichert = signal(false);
   readonly fehler = signal<readonly string[]>([]);
   readonly logo = signal<string | null>(null);
 
@@ -442,6 +476,55 @@ export class EinstellungenPage {
     this.logo.set(await alsDataUrl(datei));
     this.fehler.set([]);
   }
+
+  async exportieren(): Promise<void> {
+    this.sichert.set(true);
+    try {
+      const dateiname = await this.datensicherung.exportieren();
+      await this.meldung.erfolg(`Sicherung erstellt: ${dateiname}`);
+    } catch (fehler) {
+      this.fehler.set([`Export fehlgeschlagen: ${fehlerText(fehler)}`]);
+    } finally {
+      this.sichert.set(false);
+    }
+  }
+
+  protected sicherungGewaehlt(ereignis: Event): void {
+    const eingabe = ereignis.target as HTMLInputElement;
+    const datei = eingabe.files?.[0];
+    eingabe.value = '';
+    if (datei) {
+      void this.wiederherstellen(datei);
+    }
+  }
+
+  /** Ersetzt nach Rückfrage alle Daten durch die Sicherung und lädt die App neu. */
+  async wiederherstellen(datei: Blob): Promise<boolean> {
+    const bestaetigt = await this.bestaetigung.frage(
+      'Daten wiederherstellen?',
+      'Alle Daten auf diesem Gerät werden durch den Inhalt der Sicherungsdatei ersetzt. Das lässt sich nicht rückgängig machen.',
+      'Ersetzen',
+    );
+    if (!bestaetigt) {
+      return false;
+    }
+    this.sichert.set(true);
+    try {
+      await this.datensicherung.wiederherstellen(datei);
+      await this.meldung.erfolg('Daten wiederhergestellt');
+      await this.laden();
+      this.nachWiederherstellung();
+      return true;
+    } catch (fehler) {
+      this.fehler.set([`Wiederherstellung fehlgeschlagen: ${fehlerText(fehler)}`]);
+      return false;
+    } finally {
+      this.sichert.set(false);
+    }
+  }
+
+  /** Lädt die App neu, damit alle Ansichten den wiederhergestellten Stand zeigen. */
+  nachWiederherstellung: () => void = () => setTimeout(() => location.assign('/'), 800);
 
   private async laden(): Promise<void> {
     const [firma, einstellungen, rechnung, auftrag] = await Promise.all([

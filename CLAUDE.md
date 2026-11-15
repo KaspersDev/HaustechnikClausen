@@ -54,6 +54,14 @@ src/app/
   SQLite-Plugin, damit Tests ohne Gerät laufen.
 - **Migrationen:** nummeriert, nur vorwärts, Stand in `PRAGMA user_version`.
   Ausgelieferte Migrationen werden nie nachträglich geändert.
+- **Rechnung als Dokument:** `core/domain/rechnungsdokument.ts` baut aus Rechnung,
+  Firmendaten und Einstellungen ein fertig formatiertes Dokumentmodell (rein, dicht
+  getestet). `core/services/pdf-definition.ts` übersetzt es nur noch in pdfmake.
+  Inhaltliche Änderungen an der Rechnung gehören ins Dokumentmodell.
+- **Dateiausgabe:** PDF und Datensicherung gehen über `DATEIAUSGABE` (Gerät:
+  Teilen-Dialog, Browser: Download).
+- **Datensicherung:** `core/db/datensicherung.ts` kopiert die Daten tabellenweise
+  zwischen laufender Datenbank und einer SQLite-Datei – unabhängig vom Treiber.
 - **Sync-Vorbereitung:** IDs sind UUIDs (Text). Jede Tabelle hat `erstelltAm`,
   `geaendertAm` und `geloeschtAm` (Soft Delete). Kein Hard Delete fachlicher Daten.
 
@@ -120,6 +128,20 @@ Mit ⊕ markierte Felder sind Ergänzungen gegenüber der ursprünglichen Vorgab
 - **V2:** Zeiterfassung Start/Stopp, Materialerfassung, Fotos, Angebote → Auftrag
 - **V3:** Kundenunterschrift, Kalender, Zahlungsstatus/Mahnwesen, Cloud-Sync/Backup
   (bis dahin Export-Funktion), E-Rechnung (ZUGFeRD/XRechnung)
+
+## Stand
+
+Version 1 ist umgesetzt (Schritte 1–14 des Plans). Noch nicht auf einem echten Gerät
+geprüft: Capacitor-SQLite-Treiber, Teilen-Dialog, Android-Build.
+
+## Tests
+
+- Unit-/Komponententests liegen neben dem Code (`*.spec.ts`). Komponententests nutzen
+  `provideTestUmgebung(await testKontext())`: echte Repositories auf einer
+  In-Memory-SQLite, feste Uhr, vorhersagbare IDs, Dialoge als `TestDialoge`.
+- Gemeinsame Testdaten: `src/app/testing/fixtures.ts`.
+- Browser-Tests in `e2e/` (Node-Testrunner + Playwright, Touch-Eingabe).
+- Seiten laden ihre Daten asynchron; Tests warten auf `seite.geladen`.
 
 ## Befehle
 

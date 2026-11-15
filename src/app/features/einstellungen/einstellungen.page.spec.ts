@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import initSqlJs from 'sql.js';
 import { STANDARD_EINSTELLUNGEN } from '../../core/domain/firma';
 import {
   EINSTELLUNGEN_REPOSITORY,
@@ -6,8 +7,10 @@ import {
 } from '../../core/repositories/firma.repository';
 import { NUMMERNKREIS_REPOSITORY } from '../../core/repositories/nummernkreis.repository';
 import { vergibNummer } from '../../core/repositories/sqlite/nummernvergabe';
+import { SQLJS_LADER } from '../../core/services/datensicherung.service';
+import { DATEIAUSGABE } from '../../core/services/pdf.service';
 import { testKontext } from '../../testing/test-datenbank';
-import { provideTestUmgebung } from '../../testing/test-providers';
+import { TestDialoge, provideTestUmgebung } from '../../testing/test-providers';
 import { EinstellungenPage } from './einstellungen.page';
 
 const GUELTIG = {
@@ -143,5 +146,71 @@ describe('EinstellungenPage', () => {
     await seite.uebernimmLogo(new Blob([new Uint8Array(1024 * 1024 + 1)], { type: 'image/png' }));
     expect(seite.logo()).toBeNull();
     expect(seite.fehler()[0]).toContain('größer als 1 MB');
+  });
+
+  describe('Datensicherung', () => {
+    let ausgegeben: { dateiname: string; base64: string }[];
+
+    const sicherung = (): Blob =>
+      new Blob([Uint8Array.from(atob(ausgegeben[0].base64), (z) => z.charCodeAt(0))]);
+
+    beforeEach(async () => {
+      ausgegeben = [];
+      TestBed.overrideProvider(DATEIAUSGABE, {
+        useValue: {
+          ausgeben: async (d: { dateiname: string; base64: string }) => void ausgegeben.push(d),
+        },
+      });
+      TestBed.overrideProvider(SQLJS_LADER, { useValue: () => initSqlJs() });
+      await erzeugen();
+      seite.nachWiederherstellung = () => undefined;
+      seite.form.patchValue(GUELTIG);
+      await seite.speichern();
+    });
+
+    it('bietet Export und Wiederherstellung als Schaltflächen an', async () => {
+      const el = fixture.nativeElement as HTMLElement;
+      (el.querySelector('ion-button.exportieren') as HTMLElement).click();
+      await vi.waitFor(() => expect(ausgegeben).toHaveLength(1));
+      expect(el.querySelector('ion-button.wiederherstellen')).not.toBeNull();
+      expect(el.querySelector('input[type="file"][accept*=".sqlite"]')).not.toBeNull();
+    });
+
+    it('exportiert den Datenbestand als Datei mit Datum im Namen', async () => {
+      await seite.exportieren();
+      expect(ausgegeben[0].dateiname).toBe('haustechnik-sicherung-2026-03-10.sqlite');
+      expect(atob(ausgegeben[0].base64).startsWith('SQLite format 3')).toBe(true);
+      expect(TestBed.inject(TestDialoge).erfolge.at(-1)).toContain('Sicherung erstellt');
+    });
+
+    it('stellt nach Bestätigung den exportierten Stand wieder her', async () => {
+      await seite.exportieren();
+      seite.form.patchValue({ name: 'Geändert GmbH' });
+      await seite.speichern();
+
+      expect(await seite.wiederherstellen(sicherung())).toBe(true);
+      expect((await TestBed.inject(FIRMENDATEN_REPOSITORY).laden()).name).toBe(
+        'Haustechnik Clausen',
+      );
+      expect(seite.form.getRawValue().name).toBe('Haustechnik Clausen');
+      expect(TestBed.inject(TestDialoge).fragen).toEqual(['Daten wiederherstellen?']);
+    });
+
+    it('stellt ohne Bestätigung nichts wieder her', async () => {
+      await seite.exportieren();
+      seite.form.patchValue({ name: 'Geändert GmbH' });
+      await seite.speichern();
+      TestBed.inject(TestDialoge).antwort = false;
+      expect(await seite.wiederherstellen(sicherung())).toBe(false);
+      expect((await TestBed.inject(FIRMENDATEN_REPOSITORY).laden()).name).toBe('Geändert GmbH');
+    });
+
+    it('meldet eine ungültige Datei und behält die Daten', async () => {
+      expect(await seite.wiederherstellen(new Blob(['kein sqlite']))).toBe(false);
+      expect(seite.fehler()[0]).toContain('keine Datensicherung dieser App');
+      expect((await TestBed.inject(FIRMENDATEN_REPOSITORY).laden()).name).toBe(
+        'Haustechnik Clausen',
+      );
+    });
   });
 });

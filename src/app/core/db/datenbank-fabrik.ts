@@ -25,7 +25,8 @@ async function oeffneAufGeraet(): Promise<Datenbank> {
   await verbindung.run('PRAGMA foreign_keys = ON', [], false);
 
   const treiber = new CapacitorTreiber(verbindung, async () => {
-    throw new Error('Der Export auf dem Gerät folgt mit der Export-Funktion (Schritt 14).');
+    // Die Datensicherung kopiert die Daten tabellenweise (siehe datensicherung.ts).
+    throw new Error('Auf dem Gerät wird die Datenbankdatei nicht direkt gelesen.');
   });
   return new SerielleDatenbank(treiber);
 }

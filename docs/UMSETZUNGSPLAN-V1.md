@@ -1,6 +1,18 @@
 # Umsetzungsplan Version 1
 
-Status: **Entwurf – wartet auf Freigabe.** Bis zur Freigabe wird kein Code geschrieben.
+Status: **Freigegeben und umgesetzt (Schritte 1–14).** Die offenen Punkte wurden wie
+vorgeschlagen umgesetzt. Abweichungen vom Plan:
+
+- Im Browser und in Tests läuft SQLite über `sql.js` statt `jeep-sqlite`.
+- Das Logo liegt als Data-URL in der Datenbank statt als Datei im App-Verzeichnis;
+  dadurch ist es in der Datensicherung enthalten.
+- PDFs werden nicht dauerhaft abgelegt, sondern bei Bedarf neu erzeugt (die
+  festgeschriebene Rechnung ist unveränderlich, das PDF also immer gleich). Eine
+  Vorschau in der App gibt es nicht; das PDF öffnet sich über den Teilen-Dialog.
+- Zeiten über Mitternacht lassen sich im Formular nicht erfassen (ein Datum, Von/Bis);
+  die Fachlogik kann es bereits, die Start/Stopp-Erfassung in V2 nutzt das.
+- Noch offen: Android-Build und Test auf dem Tablet (in der Entwicklungsumgebung
+  gibt es kein Android SDK).
 
 Umfang V1: Kundenverwaltung, Artikel und Leistungen, Auftrags-Kanban,
 „Rechnung aus Auftrag erzeugen", PDF-Export, Firmendaten und Einstellungen.
